@@ -1,0 +1,57 @@
+{
+  "source": {
+    "provider": "Nhà Tốt",
+    "reference_url": "https://www.nhatot.com/tham-khao-gia-mua-ban-can-ho-chung-cu-tp-ho-chi-minh",
+    "listing_url": "https://www.nhatot.com/mua-ban-can-ho-chung-cu-tp-ho-chi-minh",
+    "captured_at": "2026-08-27",
+    "note": "Dữ liệu mẫu tham khảo, không phải dữ liệu giao dịch đã xác minh."
+  },
+  "market_summary": {
+    "area": "TP Hồ Chí Minh",
+    "listing_count": 7572,
+    "common_price_range_vnd": {
+      "min": 2600000000,
+      "max": 11800000000
+    },
+    "average_price_per_apartment_vnd": 3550000000,
+    "month_over_month_change_percent": -1.4,
+    "year_over_year_change_percent": 7.6
+  },
+  "district_summary": [
+    {
+      "district": "Quận 12",
+      "price_range_vnd": {"min": 2050000000, "max": 4620000000},
+      "average_price_vnd": 2550000000,
+      "listing_count": null
+    },
+    {
+      "district": "Bình Tân",
+      "price_range_vnd": {"min": 2100000000, "max": 5500000000},
+      "average_price_vnd": 2650000000,
+      "listing_count": 471
+    },
+    {
+      "district": "Gò Vấp",
+      "price_range_vnd": {"min": 2110000000, "max": 6800000000},
+      "average_price_vnd": 3000000000,
+      "listing_count": null
+    },
+    {
+      "district": "Bình Chánh",
+      "price_range_vnd": {"min": 2050000000, "max": 6350000000},
+      "average_price_vnd": 3150000000,
+      "listing_count": 470
+    }
+  ],
+  "project_price_samples_quan_8": [
+    {"project": "Topaz Elite", "ward": "Phường 4", "price_vnd_per_m2": 31510000},
+    {"project": "Heaven Riverview", "ward": "Phường 16", "price_vnd_per_m2": 27660000},
+    {"project": "Central Premium", "ward": "Phường 5", "price_vnd_per_m2": 45980000},
+    {"project": "The PegaSuite", "ward": "Phường 6", "price_vnd_per_m2": 36290000},
+    {"project": "Tara Residence", "ward": "Phường 6", "price_vnd_per_m2": 32820000},
+    {"project": "Diamond Lotus Riverside", "ward": "Phường 8", "price_vnd_per_m2": 48280000},
+    {"project": "Conic Riverside", "ward": "Phường 7", "price_vnd_per_m2": 26670000},
+    {"project": "Diamond Riverside", "ward": "Phường 16", "price_vnd_per_m2": 26390000},
+    {"project": "Topaz City", "ward": "Phường 4", "price_vnd_per_m2": 30530000}
+  ]
+}
