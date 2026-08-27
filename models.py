@@ -1,52 +1,99 @@
-"""SQLAlchemy models for the empty Contract Verifier database."""
-
+"""SQLAlchemy models for the empty Contract Verifier schema."""
 from __future__ import annotations
-
 from datetime import datetime
+from typing import Any
 from uuid import UUID
-
-from sqlalchemy import DateTime, ForeignKey, Integer, JSON, Uuid, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, JSON, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
 
 class Base(DeclarativeBase):
     pass
 
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (CheckConstraint("role IN ('user', 'admin')", name="ck_users_role"),)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    full_name: Mapped[str | None] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(32), nullable=False, default="user", server_default="user")
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
 class Contract(Base):
-    """Minimal contract table needed by the clause foreign key.
-
-    The upload implementation can extend this model with the remaining columns
-    from AGENTS.md as the repository moves away from its temporary in-memory
-    storage.
-    """
-
     __tablename__ = "contracts"
-
+    __table_args__ = (
+        CheckConstraint("file_size_bytes > 0", name="ck_contracts_file_size"),
+        CheckConstraint("status IN ('uploaded', 'verifying', 'verified', 'mismatch', 'failed')", name="ck_contracts_status"),
+        CheckConstraint("length(sha256_hash) = 64", name="ck_contracts_hash_length"),
+    )
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    uploaded_by: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    storage_key: Mapped[str] = mapped_column(String(1024), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(127), nullable=False)
+    file_size_bytes: Mapped[int] = mapped_column(nullable=False)
+    sha256_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    contract_type: Mapped[str | None] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="uploaded", server_default="uploaded", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
+class VerificationLog(Base):
+    __tablename__ = "verification_logs"
+    __table_args__ = (
+        CheckConstraint("result IN ('matched', 'mismatched', 'failed')", name="ck_verification_result"),
+        CheckConstraint("length(expected_sha256) = 64 AND length(actual_sha256) = 64", name="ck_verification_hash_length"),
+        CheckConstraint("duration_ms IS NULL OR duration_ms >= 0", name="ck_verification_duration"),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    contract_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("contracts.id", ondelete="RESTRICT"), nullable=False, index=True)
+    requested_by: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
+    expected_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    actual_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    result: Mapped[str] = mapped_column(String(32), nullable=False)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    duration_ms: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
 class ContractClause(Base):
-    """A flexible, ordered clause belonging to a contract."""
-
     __tablename__ = "contract_clauses"
-    __table_args__ = (UniqueConstraint("contract_id", "clause_order", name="uq_contract_clause_order"),)
-
+    __table_args__ = (UniqueConstraint("contract_id", "clause_order", name="uq_contract_clause_order"), CheckConstraint("clause_order > 0", name="ck_clause_order"))
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
-    contract_id: Mapped[UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("contracts.id", ondelete="RESTRICT"), nullable=False, index=True
-    )
+    contract_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("contracts.id", ondelete="RESTRICT"), nullable=False, index=True)
     clause_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     clause_order: Mapped[int] = mapped_column(Integer, nullable=False)
-    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    content: Mapped[str | None] = mapped_column(Text, nullable=True)
-    # JSON is portable across SQLite/PostgreSQL; PostgreSQL can use JSONB later.
-    # Expected rental metadata keys include gia_thue, tien_coc, tien_dien,
-    # tien_nuoc and dien_tich. Additional keys are allowed per clause_type.
-    dynamic_metadata: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
-    )
+    title: Mapped[str | None] = mapped_column(String(255))
+    content: Mapped[str | None] = mapped_column(Text)
+    dynamic_metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict, server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+
+class LegalReference(Base):
+    """Imported legal-reference rows used by contract analysis."""
+    __tablename__ = "legal_references"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    clause_category: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    rule_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    standard_value: Mapped[str] = mapped_column(Text, nullable=False)
+    unit: Mapped[str] = mapped_column(String(64), nullable=False)
+    reference: Mapped[str] = mapped_column(String(2048), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class RiskRule(Base):
+    """Imported keyword rules used to scan contract text."""
+    __tablename__ = "risk_rules"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    target_section: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    keyword_trigger: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    risk_level: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    default_warning_message: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
