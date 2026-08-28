@@ -5,14 +5,14 @@ Backend FastAPI xác thực hợp đồng bằng SHA-256, quản lý điều kho
 ## Kiến trúc
 
 ```text
-main.py                       FastAPI, CORS và router
-database.py                   PostgreSQL, session và tạo schema
-models.py                     SQLAlchemy models và constraints
-schemas.py                    Pydantic request/response schemas
-auth.py                       bcrypt, JWT và RBAC dependency
-routers/auth_routes.py        Đăng ký, đăng nhập, tài khoản
-routers/contract_routes.py    Upload, verify, clauses, audit history
-import_excel.py               Import Excel vào PostgreSQL
+backend/main.py               FastAPI, CORS và router
+backend/database.py           PostgreSQL, session và tạo schema
+backend/models.py             SQLAlchemy models và constraints
+backend/schemas.py            Pydantic request/response schemas
+backend/auth.py               bcrypt, JWT và RBAC dependency
+backend/routers/auth_routes.py Đăng ký, đăng nhập, tài khoản
+backend/routers/contract_routes.py Upload, verify, clauses, audit history
+backend/import_excel.py       Import Excel vào PostgreSQL
 data/                         Excel, nguồn tham khảo và hợp đồng mẫu
 ```
 
@@ -60,7 +60,7 @@ python -m venv .venv
 # Linux/macOS
 source .venv/bin/activate
 pip install fastapi uvicorn sqlalchemy psycopg2-binary pandas openpyxl bcrypt python-multipart
-uvicorn main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 Khi khởi động, `Base.metadata.create_all()` tự tạo schema và index cần thiết. Logic này chỉ tạo cấu trúc, không seed user hoặc hợp đồng.
@@ -70,7 +70,7 @@ API docs: <http://localhost:8000/docs>
 ## Import Excel
 
 ```bash
-python import_excel.py
+python -m backend.import_excel
 ```
 
 Importer đọc `test_set_labeled.xlsx` để tạo hợp đồng mẫu và `contract_clauses.dynamic_metadata` gồm `gia_thue`, `tien_coc`, `tien_dien`, `tien_nuoc`; đọc `legal_references.xlsx` vào `legal_references`; và đọc `risk_rules_master.xlsx` vào `risk_rules`.

@@ -1,9 +1,9 @@
 """Application entry point for the Contract Verifier API."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import create_empty_database
-from routers.auth_routes import router as auth_router
-from routers.contract_routes import router as contract_router
+from .database import create_empty_database
+from .routers.auth_routes import router as auth_router
+from .routers.contract_routes import router as contract_router
 
 create_empty_database()  # Schema synchronization only; no seed rows are created here.
 app = FastAPI(

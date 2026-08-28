@@ -17,12 +17,12 @@ import pandas as pd
 from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from models import Base, Contract, ContractClause, LegalReference, RiskRule, User, VerificationLog
+from .models import Base, Contract, ContractClause, LegalReference, RiskRule, User, VerificationLog
 
 DATABASE_URL = "postgresql://admin:matkhau_xinfu@localhost:5432/contract_verifier_db"
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 IMPORT_EMAIL = "excel-import@contract-verifier.local"
 IMPORT_PASSWORD = "change-this-import-password"
 

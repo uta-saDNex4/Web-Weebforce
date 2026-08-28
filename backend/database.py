@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from models import Base
+from .models import Base
 
 SQLALCHEMY_DATABASE_URL = "postgresql://admin:matkhau_xinfu@localhost:5432/contract_verifier_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)

@@ -2,7 +2,7 @@
 from __future__ import annotations
 import hashlib, hmac, os, secrets, threading
 from fastapi import BackgroundTasks
-from ai_engine import ai_analyze_contract_context
+from ..ai_engine import ai_analyze_contract_context
 from pathlib import Path
 from time import perf_counter
 from typing import Annotated
@@ -11,17 +11,18 @@ from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile,
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from auth import check_admin_role, get_current_user
-from database import get_db
-from models import Contract, ContractClause, ContractImage, LegalReference, User, VerificationLog
-from schemas import ClauseCreate, ClauseResponse, ContractImageResponse, ContractResponse, VerificationLogResponse, VerificationResponse
+from ..auth import check_admin_role, get_current_user
+from ..database import get_db
+from ..models import Contract, ContractClause, ContractImage, LegalReference, User, VerificationLog
+from ..schemas import ClauseCreate, ClauseResponse, ContractImageResponse, ContractResponse, VerificationLogResponse, VerificationResponse
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 MAX_FILE_SIZE = 20 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".txt"}
 CHUNK_SIZE = 1024 * 1024
-STORAGE_ROOT = Path(os.getenv("STORAGE_ROOT", "storage"))
-SECURE_STORAGE_ROOT = Path(os.getenv("SECURE_STORAGE_ROOT", "secure_storage"))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+STORAGE_ROOT = Path(os.getenv("STORAGE_ROOT", str(PROJECT_ROOT / "storage")))
+SECURE_STORAGE_ROOT = Path(os.getenv("SECURE_STORAGE_ROOT", str(PROJECT_ROOT / "secure_storage")))
 MAX_IMAGE_SIZE = 10 * 1024 * 1024
 _legal_reference_cache: list[dict[str, str]] | None = None
 _legal_reference_cache_lock = threading.Lock()
