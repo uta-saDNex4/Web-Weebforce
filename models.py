@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 from uuid import UUID
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, JSON, String, Text, UniqueConstraint, Uuid, func
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 class Base(DeclarativeBase):
@@ -58,6 +58,11 @@ class VerificationLog(Base):
     duration_ms: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+
+Index("idx_contracts_user_date", Contract.uploaded_by, Contract.created_at.desc())
+Index("idx_contracts_status_date", Contract.status, Contract.created_at.desc())
+Index("idx_logs_contract_date", VerificationLog.contract_id, VerificationLog.created_at.desc())
+
 class ContractClause(Base):
     __tablename__ = "contract_clauses"
     __table_args__ = (UniqueConstraint("contract_id", "clause_order", name="uq_contract_clause_order"), CheckConstraint("clause_order > 0", name="ck_clause_order"))
@@ -97,3 +102,24 @@ class RiskRule(Base):
     default_warning_message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ContractImage(Base):
+    """Metadata for contract or receipt images stored outside PostgreSQL."""
+    __tablename__ = "contract_images"
+    __table_args__ = (
+        CheckConstraint("file_size_bytes > 0", name="ck_contract_images_file_size"),
+        CheckConstraint("mime_type IN ('image/jpeg', 'image/png')", name="ck_contract_images_mime_type"),
+        CheckConstraint("length(sha256_hash) = 64", name="ck_contract_images_hash_length"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    uploaded_by: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
+    contract_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), ForeignKey("contracts.id", ondelete="RESTRICT"), nullable=True, index=True)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    storage_key: Mapped[str] = mapped_column(String(1024), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(127), nullable=False)
+    file_size_bytes: Mapped[int] = mapped_column(nullable=False)
+    sha256_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())

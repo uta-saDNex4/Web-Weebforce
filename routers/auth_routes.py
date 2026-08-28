@@ -1,12 +1,13 @@
 """Registration, login and current-user endpoints."""
-from uuid import uuid4
+from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from auth import create_access_token, get_current_user, hash_password, verify_password
+from auth import check_admin_role, create_access_token, get_current_user, hash_password, verify_password
 from models import User
-from schemas import TokenResponse, UserLogin, UserRegistration, UserResponse
+from schemas import TokenResponse, UserLogin, UserRegistration, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/api", tags=["auth"])
 
@@ -42,3 +43,20 @@ async def login(request: Request, db: Session = Depends(get_db)):
 @router.get("/auth/me", response_model=UserResponse)
 def me(current: User = Depends(get_current_user)):
     return current
+
+@router.put("/users/me", response_model=UserResponse)
+@router.put("/auth/me", response_model=UserResponse)
+def update_me(payload: UserUpdate, current: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if payload.full_name is not None: current.full_name = payload.full_name.strip() or None
+    if payload.password is not None: current.password_hash = hash_password(payload.password)
+    current.updated_at = datetime.now(timezone.utc)
+    db.commit(); db.refresh(current)
+    return current
+
+@router.delete("/users/{user_id}", response_model=UserResponse)
+def deactivate_user(user_id: UUID, current: User = Depends(check_admin_role), db: Session = Depends(get_db)):
+    user = db.get(User, user_id)
+    if not user: raise HTTPException(404, "User not found")
+    user.is_active = False; user.updated_at = datetime.now(timezone.utc)
+    db.commit(); db.refresh(user)
+    return user

@@ -12,6 +12,11 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expi
 def create_empty_database() -> None:
     """Create schema only. No users, contracts or audit logs are seeded."""
     Base.metadata.create_all(bind=engine)
+    # create_all does not add indexes to tables that already existed; create
+    # each declared index explicitly so upgrades also reach existing Docker DBs.
+    for table in Base.metadata.tables.values():
+        for index in table.indexes:
+            index.create(bind=engine, checkfirst=True)
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
