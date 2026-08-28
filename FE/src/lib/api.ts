@@ -1,0 +1,182 @@
+/**
+ * API client layer — tập trung tất cả lời gọi đến FastAPI backend.
+ * Base URL được lấy từ biến môi trường NEXT_PUBLIC_API_URL.
+ */
+
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+
+// Localtunnel yêu cầu header này để bypass trang cảnh báo
+const TUNNEL_HEADER: Record<string, string> = BASE.includes('.loca.lt')
+  ? { 'bypass-tunnel-reminder': 'true' }
+  : {};
+
+// ─── Token helpers ────────────────────────────────────────────────────────────
+
+export function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('access_token');
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem('access_token', token);
+}
+
+export function removeToken(): void {
+  localStorage.removeItem('access_token');
+}
+
+// ─── Base fetch wrapper ───────────────────────────────────────────────────────
+
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+  auth = true,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    ...TUNNEL_HEADER,
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (auth) {
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      message = body?.detail ?? body?.message ?? message;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(message);
+  }
+
+  // 204 No Content
+  if (res.status === 204) return undefined as T;
+
+  return res.json() as Promise<T>;
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface ContractResponse {
+  id: string;
+  original_filename: string;
+  mime_type: string;
+  file_size_bytes: number;
+  sha256_hash: string;
+  contract_type: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface VerificationResponse {
+  contract_id: string;
+  expected_sha256: string;
+  actual_sha256: string;
+  result: 'matched' | 'mismatched' | 'failed';
+  verification_log_id: string;
+  duration_ms: number | null;
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export async function register(
+  email: string,
+  password: string,
+  full_name?: string,
+): Promise<UserResponse> {
+  return apiFetch<UserResponse>(
+    '/api/auth/register',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, full_name }),
+    },
+    false,
+  );
+}
+
+export async function login(
+  email: string,
+  password: string,
+): Promise<TokenResponse> {
+  const data = await apiFetch<TokenResponse>(
+    '/api/auth/login',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    },
+    false,
+  );
+  setToken(data.access_token);
+  return data;
+}
+
+export async function getMe(): Promise<UserResponse> {
+  return apiFetch<UserResponse>('/api/auth/me');
+}
+
+export function logout(): void {
+  removeToken();
+}
+
+// ─── Contracts ────────────────────────────────────────────────────────────────
+
+export async function uploadContract(
+  file: File,
+  contractType?: string,
+): Promise<ContractResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers: Record<string, string> = {};
+  if (contractType) headers['contract-type'] = contractType;
+
+  return apiFetch<ContractResponse>('/api/contracts', {
+    method: 'POST',
+    body: formData,
+    headers,
+  });
+}
+
+export async function verifyContract(
+  contractId: string,
+  file?: File,
+): Promise<VerificationResponse> {
+  if (file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiFetch<VerificationResponse>(
+      `/api/contracts/${contractId}/verify`,
+      { method: 'POST', body: formData },
+    );
+  }
+  return apiFetch<VerificationResponse>(
+    `/api/contracts/${contractId}/verify`,
+    { method: 'POST' },
+  );
+}
+
+export async function getContract(contractId: string): Promise<ContractResponse> {
+  return apiFetch<ContractResponse>(`/api/contracts/${contractId}`);
+}
