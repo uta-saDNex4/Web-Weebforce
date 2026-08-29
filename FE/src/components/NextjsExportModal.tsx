@@ -66,39 +66,39 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f7fafc] text-[#10253f]">
-      <Navbar 
+      <Navbar
         onOpenChecker={() => setIsCheckerOpen(true)}
         onOpenTemplates={() => {
           document.getElementById('templates-section')?.scrollIntoView({ behavior: 'smooth' });
         }}
       />
-      <Hero 
+      <Hero
         onOpenChecker={() => setIsCheckerOpen(true)}
         onOpenTemplates={() => {
           document.getElementById('templates-section')?.scrollIntoView({ behavior: 'smooth' });
         }}
       />
-      <TemplateLibrary 
+      <TemplateLibrary
         onSelectTemplate={(tmpl) => setSelectedTemplate(tmpl)}
       />
-      <VerificationProcess 
+      <VerificationProcess
         onStartProcess={() => setIsCheckerOpen(true)}
       />
       <AiAssistantSection />
-      <LegalReferences 
+      <LegalReferences
         onOpenChecker={() => setIsCheckerOpen(true)}
       />
-      <CallToAction 
+      <CallToAction
         onStart={() => setIsCheckerOpen(true)}
       />
       <Footer />
 
       {/* Modals */}
-      <ContractCheckerModal 
+      <ContractCheckerModal
         isOpen={isCheckerOpen}
         onClose={() => setIsCheckerOpen(false)}
       />
-      <TemplateViewerModal 
+      <TemplateViewerModal
         template={selectedTemplate}
         onClose={() => setSelectedTemplate(null)}
       />
@@ -230,8 +230,8 @@ export default function Home() {
                 <p className="text-[#8297ac]">
                   Toàn bộ code trong source hiện tại được thiết kế 100% tương
                   thích cả với Next.js App Router (thêm{" "}
-                  <code className="text-white">'use client'</code> ở đầu các
-                  file có hook/state).
+                  <code className="text-white">&#39;use client&#39;</code> ở đầu
+                  các file có hook/state).
                 </p>
               </div>
             </div>

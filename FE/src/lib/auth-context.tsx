@@ -32,16 +32,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Khôi phục session khi reload trang
   useEffect(() => {
-    const token = api.getToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    api
-      .getMe()
-      .then(setUser)
-      .catch(() => api.removeToken())
-      .finally(() => setLoading(false));
+    let active = true;
+    const restore = async () => {
+      const token = api.getToken();
+      if (!token) {
+        if (active) setLoading(false);
+        return;
+      }
+      try {
+        const me = await api.getMe();
+        if (active) setUser(me);
+      } catch {
+        api.removeToken();
+        if (active) setUser(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    void restore();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

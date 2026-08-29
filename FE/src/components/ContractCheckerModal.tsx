@@ -485,7 +485,7 @@ export const ContractCheckerModal: React.FC<ContractCheckerModalProps> = ({
                       </h5>
                     </div>
                     <div className="p-3 bg-[#f8fafd] rounded-lg text-xs text-[#26435e] italic border-l-2 border-[#0b5fff]">
-                      "{risk.clauseText}"
+                      &quot;{risk.clauseText}&quot;
                     </div>
                     <div className="text-xs text-[#49627d] leading-relaxed">
                       <strong>Phân tích:</strong> {risk.analysis}
@@ -520,7 +520,7 @@ export const ContractCheckerModal: React.FC<ContractCheckerModalProps> = ({
                         </button>
                       </div>
                       <p className="text-xs text-[#26435e] bg-[#f7fafc] p-2.5 rounded-lg border border-[#e6edf4]">
-                        "{risk.negotiationScript}"
+                        &quot;{risk.negotiationScript}&quot;
                       </p>
                     </div>
                   </div>
