@@ -1,6 +1,6 @@
-import React from 'react';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
-import { motion } from 'motion/react';
+import React from "react";
+import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { motion } from "motion/react";
 
 interface CallToActionProps {
   onStart: () => void;
@@ -11,9 +11,8 @@ export const CallToAction: React.FC<CallToActionProps> = ({ onStart }) => {
     <section className="py-20 sm:py-28 relative overflow-hidden bg-gradient-to-b from-[#f7fafc] to-[#e6f0ff]/50 border-t border-[#d8e3ef]/70">
       {/* Background visual accents */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#0b5fff]/8 blur-3xl -z-10 rounded-full" />
-      
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -43,7 +42,8 @@ export const CallToAction: React.FC<CallToActionProps> = ({ onStart }) => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-base sm:text-lg text-[#49627d] max-w-xl mx-auto mb-9 leading-relaxed"
         >
-          Tạo không gian an toàn để bạn xem, hỏi và chuẩn bị trước mỗi cam kết quan trọng.
+          Tạo không gian an toàn để bạn xem, hỏi và chuẩn bị trước mỗi cam kết
+          quan trọng.
         </motion.p>
 
         <motion.div
@@ -61,7 +61,6 @@ export const CallToAction: React.FC<CallToActionProps> = ({ onStart }) => {
             <ArrowRight className="w-5 h-5" />
           </button>
         </motion.div>
-
       </div>
     </section>
   );
