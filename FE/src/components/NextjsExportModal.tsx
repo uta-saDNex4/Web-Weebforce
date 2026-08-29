@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { X, Copy, Check, Code2, FolderTree, Terminal } from 'lucide-react';
-import { motion } from 'motion/react';
+import React, { useState } from "react";
+import { X, Copy, Check, Code2, FolderTree, Terminal } from "lucide-react";
+import { motion } from "motion/react";
 
 interface NextjsExportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const NextjsExportModal: React.FC<NextjsExportModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'structure' | 'page' | 'guide'>('structure');
+export const NextjsExportModal: React.FC<NextjsExportModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const [activeTab, setActiveTab] = useState<"structure" | "page" | "guide">(
+    "structure",
+  );
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
@@ -102,7 +107,8 @@ export default function Home() {
 }`;
 
   const copyText = () => {
-    const content = activeTab === 'structure' ? nextjsStructure : nextjsPageCode;
+    const content =
+      activeTab === "structure" ? nextjsStructure : nextjsPageCode;
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -110,7 +116,7 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
@@ -123,8 +129,12 @@ export default function Home() {
               <Code2 className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="font-bold text-base">Next.js App Router Conversion</h3>
-              <p className="text-xs text-[#8297ac]">Codebase sẵn sàng copy & chạy trong Next.js 14 / 15</p>
+              <h3 className="font-bold text-base">
+                Next.js App Router Conversion
+              </h3>
+              <p className="text-xs text-[#8297ac]">
+                Codebase sẵn sàng copy & chạy trong Next.js 14 / 15
+              </p>
             </div>
           </div>
 
@@ -133,10 +143,14 @@ export default function Home() {
               onClick={copyText}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0b5fff] hover:bg-[#004ee6] rounded-lg transition-colors cursor-pointer"
             >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Đã sao chép' : 'Sao chép code'}</span>
+              {copied ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+              <span>{copied ? "Đã sao chép" : "Sao chép code"}</span>
             </button>
-            <button 
+            <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-[#8297ac] hover:text-white hover:bg-white/10 transition-colors"
             >
@@ -148,27 +162,33 @@ export default function Home() {
         {/* Tab Buttons */}
         <div className="px-6 py-2.5 bg-[#173d5a]/60 border-b border-[#26435e] flex gap-2 text-xs font-medium">
           <button
-            onClick={() => setActiveTab('structure')}
+            onClick={() => setActiveTab("structure")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === 'structure' ? 'bg-[#0b5fff] text-white font-semibold' : 'text-[#8297ac] hover:text-white'
+              activeTab === "structure"
+                ? "bg-[#0b5fff] text-white font-semibold"
+                : "text-[#8297ac] hover:text-white"
             }`}
           >
             <FolderTree className="w-3.5 h-3.5" />
             <span>Cấu trúc thư mục</span>
           </button>
           <button
-            onClick={() => setActiveTab('page')}
+            onClick={() => setActiveTab("page")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === 'page' ? 'bg-[#0b5fff] text-white font-semibold' : 'text-[#8297ac] hover:text-white'
+              activeTab === "page"
+                ? "bg-[#0b5fff] text-white font-semibold"
+                : "text-[#8297ac] hover:text-white"
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
             <span>app/page.tsx</span>
           </button>
           <button
-            onClick={() => setActiveTab('guide')}
+            onClick={() => setActiveTab("guide")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === 'guide' ? 'bg-[#0b5fff] text-white font-semibold' : 'text-[#8297ac] hover:text-white'
+              activeTab === "guide"
+                ? "bg-[#0b5fff] text-white font-semibold"
+                : "text-[#8297ac] hover:text-white"
             }`}
           >
             <Terminal className="w-3.5 h-3.5" />
@@ -178,25 +198,41 @@ export default function Home() {
 
         {/* Code View Body */}
         <div className="flex-1 p-6 overflow-y-auto font-mono text-xs text-[#b9cadd] bg-[#0c1c30] leading-relaxed">
-          {activeTab === 'structure' && (
+          {activeTab === "structure" && (
             <pre className="whitespace-pre">{nextjsStructure}</pre>
           )}
-          {activeTab === 'page' && (
+          {activeTab === "page" && (
             <pre className="whitespace-pre">{nextjsPageCode}</pre>
           )}
-          {activeTab === 'guide' && (
+          {activeTab === "guide" && (
             <div className="space-y-4 font-sans text-xs">
               <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
-                <h4 className="font-bold text-white text-sm">1. Khởi tạo dự án Next.js (nếu chưa có):</h4>
-                <code className="block p-2 rounded bg-black/40 text-[#6fe0c0]">npx create-next-app@latest my-contractly --typescript --tailwind --eslint --app</code>
+                <h4 className="font-bold text-white text-sm">
+                  1. Khởi tạo dự án Next.js (nếu chưa có):
+                </h4>
+                <code className="block p-2 rounded bg-black/40 text-[#6fe0c0]">
+                  npx create-next-app@latest my-contractly --typescript
+                  --tailwind --eslint --app
+                </code>
               </div>
               <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
-                <h4 className="font-bold text-white text-sm">2. Cài đặt các thư viện bổ sung:</h4>
-                <code className="block p-2 rounded bg-black/40 text-[#6fe0c0]">npm install lucide-react motion</code>
+                <h4 className="font-bold text-white text-sm">
+                  2. Cài đặt các thư viện bổ sung:
+                </h4>
+                <code className="block p-2 rounded bg-black/40 text-[#6fe0c0]">
+                  npm install lucide-react motion
+                </code>
               </div>
               <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
-                <h4 className="font-bold text-white text-sm">3. Copy các components & data:</h4>
-                <p className="text-[#8297ac]">Toàn bộ code trong source hiện tại được thiết kế 100% tương thích cả với Next.js App Router (thêm <code className="text-white">'use client'</code> ở đầu các file có hook/state).</p>
+                <h4 className="font-bold text-white text-sm">
+                  3. Copy các components & data:
+                </h4>
+                <p className="text-[#8297ac]">
+                  Toàn bộ code trong source hiện tại được thiết kế 100% tương
+                  thích cả với Next.js App Router (thêm{" "}
+                  <code className="text-white">'use client'</code> ở đầu các
+                  file có hook/state).
+                </p>
               </div>
             </div>
           )}
