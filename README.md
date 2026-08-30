@@ -116,9 +116,3 @@ Authorization: Bearer <access_token>
 - Đặt `SECRET_KEY` riêng qua biến môi trường trước production.
 - CORS wildcard chỉ phù hợp development; production phải giới hạn origin.
 - Dữ liệu trong `data/` là dữ liệu tham khảo/test, không thay thế tư vấn pháp lý.
-
-## Nguồn dữ liệu
-
-Dữ liệu được lập từ [Thư viện Pháp luật](https://thuvienphapluat.vn/), [Cổng thông tin Chính phủ](https://vanban.chinhphu.vn/), [Bộ Tư pháp](https://vbpl.moj.gov.vn/), [BHXH Việt Nam](https://baohiemxahoi.gov.vn/), [EVN](https://www.evn.com.vn/) và các nguồn báo chí được ghi trong workbook hoặc `SOURCE_INDEX.md` của từng folder.
-
-Các file `.url` trong `data/sample_contracts/` trỏ tới nguồn gốc để kiểm tra phiên bản mới nhất. Việc công chứng phụ thuộc loại giao dịch và yêu cầu pháp luật/thỏa thuận cụ thể; cần kiểm tra với tổ chức công chứng khi cần.

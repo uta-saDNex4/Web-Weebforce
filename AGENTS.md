@@ -194,15 +194,3 @@ Ví dụ cấu trúc `dynamic_metadata`:
   giới hạn tài nguyên và audit các thao tác quản trị.
 - Không ghi password, token, dữ liệu hợp đồng nhạy cảm hoặc nội dung file vào
   log ứng dụng.
-
-## 5. Hợp đồng API tối thiểu (tham khảo)
-
-- `POST /api/contracts` — upload file; trả metadata và hash SHA-256.
-- `GET /api/contracts/:id` — xem metadata khi có quyền.
-- `POST /api/contracts/:id/verify` — chạy đối chiếu và tạo verification log.
-- `POST /api/contracts/{id}/clauses` — lưu một hoặc nhiều điều khoản động của
-  hợp đồng, gồm `clause_type`, `clause_order`, nội dung và `dynamic_metadata`.
-- `GET /api/contracts/:id/verifications` — xem lịch sử xác thực khi có quyền.
-
-Tên endpoint chỉ là quy ước; khi triển khai phải giữ nguyên ý nghĩa trạng thái,
-quyền truy cập và quy tắc hash ở trên.
