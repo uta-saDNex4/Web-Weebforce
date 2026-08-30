@@ -146,8 +146,6 @@ Ví dụ cấu trúc `dynamic_metadata`:
 - `verification_logs(requested_by, created_at DESC)`.
 - `contract_clauses(contract_id, clause_order)` unique.
 - `contract_clauses(clause_type)`.
-- `contract_clauses USING GIN (dynamic_metadata)` nếu dùng PostgreSQL và cần
-  tìm kiếm theo các tham số JSON.
 
 ## 4. Feature Flow — tải file và đối chiếu SHA-256
 
