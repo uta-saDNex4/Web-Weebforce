@@ -1,4 +1,3 @@
-"""Registration, login and current-user endpoints."""
 from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from datetime import datetime, timezone
