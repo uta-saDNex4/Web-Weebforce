@@ -18,7 +18,9 @@ def register(payload: UserRegistration, db: Session = Depends(get_db)):
     if db.scalar(select(User).where(User.email == email)):
         raise HTTPException(409, "Email already registered")
     user = User(id=uuid4(), email=email, password_hash=hash_password(payload.password), full_name=payload.full_name)
-    db.add(user); db.commit(); db.refresh(user)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     return user
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -47,16 +49,22 @@ def me(current: User = Depends(get_current_user)):
 @router.put("/users/me", response_model=UserResponse)
 @router.put("/auth/me", response_model=UserResponse)
 def update_me(payload: UserUpdate, current: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if payload.full_name is not None: current.full_name = payload.full_name.strip() or None
-    if payload.password is not None: current.password_hash = hash_password(payload.password)
+    if payload.full_name is not None:
+        current.full_name = payload.full_name.strip() or None
+    if payload.password is not None:
+        current.password_hash = hash_password(payload.password)
     current.updated_at = datetime.now(timezone.utc)
-    db.commit(); db.refresh(current)
+    db.commit()
+    db.refresh(current)
     return current
 
 @router.delete("/users/{user_id}", response_model=UserResponse)
 def deactivate_user(user_id: UUID, current: User = Depends(check_admin_role), db: Session = Depends(get_db)):
     user = db.get(User, user_id)
-    if not user: raise HTTPException(404, "User not found")
-    user.is_active = False; user.updated_at = datetime.now(timezone.utc)
-    db.commit(); db.refresh(user)
+    if not user:
+        raise HTTPException(404, "User not found")
+    user.is_active = False
+    user.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
     return user
