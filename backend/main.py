@@ -4,6 +4,7 @@ from .database import create_empty_database, get_db
 from .routers.auth_routes import router as auth_router
 from .routers.contract_routes import router as contract_router
 from .auth import get_current_user
+from .models import User  # Import User
 
 # Create the database schema
 create_empty_database()
