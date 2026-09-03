@@ -81,7 +81,7 @@ def get_current_user(
         )
     return user
 
-def check_admin_role(current: User) -> User:
+def check_admin_role(current: User = Depends(get_current_user)) -> User:
     if current.role != "admin":
         raise HTTPException(status_code=403, detail="Permission denied")
     return current

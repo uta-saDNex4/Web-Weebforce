@@ -35,6 +35,8 @@ const localBindingConfig = {
 };
 
 export default defineConfig(async () => {
+  const root = process.cwd();
+
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= "false";
