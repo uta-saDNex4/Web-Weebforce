@@ -51,9 +51,12 @@ The backend container must connect to the host machine through:
 postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
 ```
 
-## Quick Start
+## Quick Start with cmd
 
 1. Copy `.env.example` to `.env`
+```bash
+copy .env.example .env
+```
 2. Keep or edit these values:
 
 ```env
