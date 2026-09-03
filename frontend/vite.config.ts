@@ -2,6 +2,7 @@ import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
+import { resolve as pathResolve } from "node:path";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -44,9 +45,39 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    resolve: {
+      preserveSymlinks: true,
+      alias: {
+        react: pathResolve(root, "node_modules/react/index.js"),
+        "react-dom": pathResolve(root, "node_modules/react-dom/index.js"),
+        "react-dom/client": pathResolve(root, "node_modules/react-dom/client.js"),
+        "react-dom/server": pathResolve(
+          root,
+          "node_modules/react-dom/server.node.js",
+        ),
+        "react/jsx-runtime": pathResolve(
+          root,
+          "node_modules/react/jsx-runtime.js",
+        ),
+        "react/jsx-dev-runtime": pathResolve(
+          root,
+          "node_modules/react/jsx-dev-runtime.js",
+        ),
+      },
+    },
     server: {
       host: "0.0.0.0",
-      allowedHosts: ["terminal.local"],
+      allowedHosts: true,
+      proxy: {
+        "/api": {
+          target: process.env.BACKEND_INTERNAL_URL ?? "http://backend:8000",
+          changeOrigin: true,
+        },
+        "/health": {
+          target: process.env.BACKEND_INTERNAL_URL ?? "http://backend:8000",
+          changeOrigin: true,
+        },
+      },
       ...(isCodexSeatbeltSandbox
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),

@@ -1,118 +1,162 @@
-# Web-Weebforce — Contract Verifier
+# Web-Weebforce - Contract Verifier
 
-Backend FastAPI xác thực hợp đồng bằng SHA-256, quản lý điều khoản hợp đồng và tra cứu rủi ro từ dữ liệu pháp lý Việt Nam. Dự án sử dụng PostgreSQL Docker, SQLAlchemy ORM, bcrypt và JWT.
+Contract Verifier is a full-stack app for:
+- uploading contract files
+- verifying SHA-256 integrity
+- managing contract clauses
+- importing legal reference data and risk rules from Excel
 
-## Kiến trúc
+This repo is designed to run with:
+- PostgreSQL running in Docker on the host machine
+- backend and frontend running in Docker containers
+- optional data import from the `data/` folder
+
+## Project Layout
 
 ```text
-backend/main.py               FastAPI, CORS và router
-backend/database.py           PostgreSQL, session và tạo schema
-backend/models.py             SQLAlchemy models và constraints
-backend/schemas.py            Pydantic request/response schemas
-backend/auth.py               bcrypt, JWT và RBAC dependency
-backend/routers/auth_routes.py Đăng ký, đăng nhập, tài khoản
-backend/routers/contract_routes.py Upload, verify, clauses, audit history
-backend/import_excel.py       Import Excel vào PostgreSQL
-data/                         Excel, nguồn tham khảo và hợp đồng mẫu
+backend/                  FastAPI backend
+frontend/                 React/Vinext frontend
+data/                     Excel references and sample contracts
+docker-compose.yml        Backend + frontend stack
+.env.example              Environment template
 ```
 
-## Tính năng
+## What Runs Automatically
 
-- Đăng ký và đăng nhập bằng JSON hoặc OAuth2 Password Form.
-- JWT access token với thời hạn cấu hình.
-- Băm mật khẩu bằng bcrypt, không lưu plaintext.
-- Upload hợp đồng tối đa 20 MiB, hỗ trợ PDF/DOC/DOCX/TXT.
-- Tính SHA-256 trên đúng byte file theo stream.
-- Verify lại file và ghi audit log append-only.
-- Xem metadata hợp đồng.
-- Quản lý `contract_clauses` bằng JSON metadata.
-- RBAC: chỉ Admin được thêm, sửa, xóa clause và xem lịch sử verification.
-- Import dữ liệu pháp lý và risk rules từ Excel.
+- The backend creates the database schema on startup.
+- No users, contracts, or verification logs are seeded automatically.
+- Sample/reference data is imported only when you run the import job manually.
 
-## Yêu cầu
+## Prerequisites
 
-- Python 3.11+
-- PostgreSQL 14+ (khuyến nghị chạy Docker)
-- `fastapi`, `uvicorn`, `sqlalchemy`, `psycopg2-binary`, `pandas`, `openpyxl`, `bcrypt`, `python-multipart`
+- Docker Desktop
+- PostgreSQL container running on the host machine and exposed on port `5432`
+- DBeaver or another DB client if you want to inspect the database
 
-## PostgreSQL Docker
+## Database Setup
+
+Use PostgreSQL credentials that match your running container:
+
+```text
+Host: localhost
+Port: 5432
+User: admin
+Password: matkhau_xinfu
+Database: contract_verifier_db
+```
+
+The backend container must connect to the host machine through:
+
+```text
+postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
+```
+
+## Quick Start
+
+1. Copy `.env.example` to `.env`
+2. Keep or edit these values:
+
+```env
+DATABASE_URL=postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
+CORS_ORIGINS=*
+BACKEND_INTERNAL_URL=http://backend:8000
+```
+
+3. Start the web app:
 
 ```bash
-docker run --name contract-verifier-postgres \
-  -e POSTGRES_USER=admin \
-  -e POSTGRES_PASSWORD=matkhau_xinfu \
-  -e POSTGRES_DB=contract_verifier_db \
-  -p 5432:5432 -d postgres:16
+docker compose up --build
 ```
 
-Chuỗi kết nối mặc định:
+4. Open the app:
+- Frontend: `http://localhost:3000`
+- Backend health check: `http://localhost:8000/health`
 
-```text
-postgresql://admin:matkhau_xinfu@localhost:5432/contract_verifier_db
+If you are on another laptop in the same network, replace `localhost` with the host machine IP, for example:
+
+- Frontend: `http://192.168.1.20:3000`
+- Backend health check: `http://192.168.1.20:8000/health`
+
+## Import Sample Data
+
+The app starts empty by default. To load the Excel-based reference data and sample contracts from `data/`:
+
+```bash
+docker compose --profile seed run --rm import-data
 ```
 
-## Cài đặt và chạy
+The import job is idempotent for the dedicated import account. It removes previously imported rows for that account before inserting fresh data.
+
+## Docker Services
+
+The Compose stack includes:
+- `backend`: FastAPI API
+- `frontend`: web UI
+- `import-data`: manual seed/import job
+
+The backend and importer both use `DATABASE_URL` from the environment, so they can connect to the PostgreSQL container already running on your host.
+
+## Frontend Behavior
+
+The frontend proxies API requests to the backend container, so you can use the app from a single origin in Docker.
+
+If you run frontend and backend separately, set:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+If you run through Docker Compose, you can leave `NEXT_PUBLIC_API_BASE_URL` empty.
+
+## Local Dev Without Docker
+
+If you want to run only the backend locally:
 
 ```bash
 python -m venv .venv
-# Windows
 .venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
 pip install fastapi uvicorn sqlalchemy psycopg2-binary pandas openpyxl bcrypt python-multipart
 uvicorn backend.main:app --reload
 ```
 
-Khi khởi động, `Base.metadata.create_all()` tự tạo schema và index cần thiết. Logic này chỉ tạo cấu trúc, không seed user hoặc hợp đồng.
-
-API docs: <http://localhost:8000/docs>
-
-## Import Excel
+If you want to run only the frontend locally:
 
 ```bash
-python -m backend.import_excel
+cd frontend
+npm install
+npm run dev
 ```
 
-Importer đọc `test_set_labeled.xlsx` để tạo hợp đồng mẫu và `contract_clauses.dynamic_metadata` gồm `gia_thue`, `tien_coc`, `tien_dien`, `tien_nuoc`; đọc `legal_references.xlsx` vào `legal_references`; và đọc `risk_rules_master.xlsx` vào `risk_rules`.
+## API Endpoints
 
-Mỗi bản ghi được sinh UUID 36 ký tự và timestamp UTC. Import có thể chạy lại; dữ liệu do import user sở hữu sẽ được thay thế để tránh nhân bản.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Health check |
+| POST | `/api/users/register` | Register |
+| POST | `/api/users/login` | Login |
+| GET | `/api/auth/me` | Current user |
+| POST | `/api/contracts` | Upload contract |
+| GET | `/api/contracts/{id}` | Get contract metadata |
+| POST | `/api/contracts/{id}/verify` | Verify SHA-256 |
+| POST | `/api/contracts/{id}/clauses` | Add clause |
+| PUT | `/api/contracts/{id}/clauses/{clause_id}` | Update clause |
+| DELETE | `/api/contracts/{id}/clauses/{clause_id}` | Delete clause |
+| GET | `/api/contracts/{id}/verifications` | Verification history |
 
-Tài khoản import mặc định cho development:
+## Data Files
 
-```text
-Email: excel-import@contract-verifier.local
-Password: change-this-import-password
-```
+The `data/` folder contains:
+- `legal_references.xlsx`
+- `risk_rules_master.xlsx`
+- `test_set_labeled.xlsx`
+- `sample_contracts/`
 
-Phải đổi hoặc loại bỏ tài khoản này trước production.
+These files are reference/import data. They are not loaded automatically at startup.
 
-## API chính
+## Notes
 
-| Method | Endpoint | Mục đích | Quyền |
-|---|---|---|---|
-| GET | `/health` | Health check | Công khai |
-| POST | `/api/users/register` | Đăng ký | Công khai |
-| POST | `/api/users/login` | Đăng nhập JSON/form | Công khai |
-| GET | `/api/auth/me` | User hiện tại | JWT |
-| POST | `/api/contracts` | Upload hợp đồng | JWT |
-| GET | `/api/contracts/{id}` | Xem metadata | Chủ sở hữu/Admin |
-| POST | `/api/contracts/{id}/verify` | Verify SHA-256 | Chủ sở hữu/Admin |
-| POST | `/api/contracts/{id}/clauses` | Thêm clause | Admin |
-| PUT | `/api/contracts/{id}/clauses/{clause_id}` | Sửa clause | Admin |
-| DELETE | `/api/contracts/{id}/clauses/{clause_id}` | Xóa clause | Admin |
-| GET | `/api/contracts/{id}/verifications` | Xem audit history | Admin |
-
-Header xác thực:
-
-```text
-Authorization: Bearer <access_token>
-```
-
-## Bảo mật và giới hạn hiện tại
-
-- Production cần bổ sung kiểm tra magic bytes, malware scanning và rate limit.
-- File gốc nên đặt trong object storage bất biến; database chỉ lưu `storage_key`.
-- Không ghi password, token, nội dung hợp đồng nhạy cảm hoặc stack trace vào log.
-- Đặt `SECRET_KEY` riêng qua biến môi trường trước production.
-- CORS wildcard chỉ phù hợp development; production phải giới hạn origin.
-- Dữ liệu trong `data/` là dữ liệu tham khảo/test, không thay thế tư vấn pháp lý.
+- Use `host.docker.internal` for backend container access to the host PostgreSQL container.
+- DBeaver should still connect to `localhost:5432` because the database is published on the host.
+- Keep `SECRET_KEY`, `DATABASE_URL`, and `CORS_ORIGINS` in `.env` for real deployments.
+- Set `CORS_ORIGINS=*` if you want the API reachable from any browser origin on your LAN.
+- The repo intentionally starts from an empty schema, not a preseeded database.

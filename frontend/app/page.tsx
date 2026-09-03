@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://red-cycles-marry.loca.lt";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type User = {
     id: string;

@@ -5,7 +5,7 @@ Frontend React/Vinext cho dự án ContractGuard.
 ## Chạy trên máy
 
 1. Sao chép `.env.example` thành `.env.local`.
-2. Đặt `NEXT_PUBLIC_API_BASE_URL` thành địa chỉ backend.
+2. Nếu frontend và backend tách domain, đặt `NEXT_PUBLIC_API_BASE_URL` thành địa chỉ backend. Nếu chạy qua Docker Compose cùng origin, có thể để trống vì frontend sẽ proxy `/api` sang backend.
 3. Cài package và chạy:
 
 ```bash

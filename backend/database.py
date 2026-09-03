@@ -1,12 +1,15 @@
 """SQLAlchemy connection configuration and empty schema creation."""
 from __future__ import annotations
+import os
 from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from .models import Base
 
-# Database URL
-SQLALCHEMY_DATABASE_URL = "postgresql://admin:matkhau_xinfu@localhost:5432/contract_verifier_db"
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db",
+)
 
 # Create engine
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)

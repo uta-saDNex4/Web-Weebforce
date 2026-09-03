@@ -154,10 +154,7 @@ async def verify(contract_id: UUID, background_tasks: BackgroundTasks, file: Upl
     except OSError:
         actual, result, error_code = "0" * 64, "failed", "FILE_NOT_FOUND"; contract.status = "failed"
     duration = int((perf_counter() - started) * 1000)
-    clauses = db.scalars(select(ContractClause).where(ContractClause.contract_id == contract.id)).all()
-    legal_references = _get_legal_reference_cache(db)
-    metadata = {key: value for clause in clauses for key, value in (clause.dynamic_metadata or {}).items()}
-    ai_metadata = {"contract_type": contract.contract_type, "legal_reference_count": len(legal_references), **metadata}
+    ai_metadata = {"contract_type": contract.contract_type}
     log = VerificationLog(id=uuid4(), contract_id=contract.id, requested_by=current.id, expected_sha256=contract.sha256_hash, actual_sha256=actual, result=result, error_code=error_code, duration_ms=duration)
     db.add(log); db.commit()
     background_tasks.add_task(_run_ai_analysis, log.id, analysis_text, ai_metadata)

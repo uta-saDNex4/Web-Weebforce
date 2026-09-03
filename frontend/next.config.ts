@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    const backendOrigin = process.env.BACKEND_INTERNAL_URL || "http://backend:8000";
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendOrigin}/api/:path*`,
+      },
+      {
+        source: "/health",
+        destination: `${backendOrigin}/health`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..auth import check_admin_role, create_access_token, get_current_user, hash_password, verify_password
+from ..auth import check_admin_role, create_access_token, get_current_user, get_password_hash, verify_password
 from ..models import User
 from ..schemas import TokenResponse, UserLogin, UserRegistration, UserResponse, UserUpdate
 
@@ -16,7 +16,7 @@ def register(payload: UserRegistration, db: Session = Depends(get_db)):
     email = str(payload.email).strip().lower()
     if db.scalar(select(User).where(User.email == email)):
         raise HTTPException(409, "Email already registered")
-    user = User(id=uuid4(), email=email, password_hash=hash_password(payload.password), full_name=payload.full_name)
+    user = User(id=uuid4(), email=email, password_hash=get_password_hash(payload.password), full_name=payload.full_name)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -51,7 +51,7 @@ def update_me(payload: UserUpdate, current: User = Depends(get_current_user), db
     if payload.full_name is not None:
         current.full_name = payload.full_name.strip() or None
     if payload.password is not None:
-        current.password_hash = hash_password(payload.password)
+        current.password_hash = get_password_hash(payload.password)
     current.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(current)
