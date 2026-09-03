@@ -7,7 +7,7 @@
   },
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
-    "dev": "vite",
+    "dev": "set NODE_OPTIONS=--conditions=react-server&& vite",
     "build": "node scripts/build.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node scripts/run-tests.mjs",
