@@ -1,0 +1,2 @@
+TypeError: Cannot read properties of undefined (reading 'replace')
+    at ignore-listed frames
