@@ -1,5 +1,15 @@
 # vinext-starter
 
+## ContractGuard API configuration
+
+See [frontend setup](README-FRONTEND.md). Copy `.env.example` to `.env.local`.
+The only public API origin variable is `NEXT_PUBLIC_API_BASE_URL`; leave it empty
+to use the `/api` proxy, or set it to the backend origin without `/api`.
+`BACKEND_INTERNAL_URL` configures the server-side proxy. Docker defaults that
+proxy to `http://backend:8000` and accepts `NEXT_PUBLIC_API_BASE_URL` as a build
+argument or development-container environment variable. Restart dev or rebuild
+after changing public variables.
+
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.

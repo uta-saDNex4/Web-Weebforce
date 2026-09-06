@@ -6,12 +6,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/+$/, "");
 
 type User = {
     id: string;
     email: string;
-    full_name: string;
+    full_name: string | null;
     role: string;
     is_active: boolean;
     created_at: string;
@@ -23,7 +23,7 @@ type Contract = {
     mime_type: string;
     file_size_bytes: number;
     sha256_hash: string;
-    contract_type: string;
+    contract_type: string | null;
     status: string;
     created_at: string;
 };
@@ -31,8 +31,8 @@ type Contract = {
 type Verification = {
     contract_id: string;
     actual_sha256: string;
-    result: string;
-    duration_ms: number;
+    result: "matched" | "mismatched" | "failed";
+    duration_ms: number | null;
     risk_score: number;
     risk_label: string;
     ai_overview: string;
@@ -42,7 +42,7 @@ type Verification = {
 type Log = {
     id: string;
     result: string;
-    duration_ms: number;
+    duration_ms: number | null;
     created_at: string;
 };
 
@@ -122,7 +122,11 @@ export default function Home() {
         const t = localStorage.getItem("contractguard_token") || "";
         if (t) {
             setToken(t);
-            api<User>("/api/auth/me", t).then(setUser).catch(() => localStorage.removeItem("contractguard_token"));
+            api<User>("/api/auth/me", t).then(setUser).catch(() => {
+                localStorage.removeItem("contractguard_token");
+                setToken("");
+                setUser(null);
+            });
         }
     }, []);
 
@@ -159,7 +163,7 @@ export default function Home() {
     }
 
     async function analyze() {
-        if (!token) {
+        if (!token || !user) {
             setAuthOpen(true);
             return;
         }
@@ -169,6 +173,8 @@ export default function Home() {
         }
         setBusy(true);
         setResult(null);
+        setContract(null);
+        setLogs([]);
         try {
             const form = new FormData();
             form.append("file", file);
@@ -178,10 +184,18 @@ export default function Home() {
                 body: form,
             });
             setContract(c);
-            const v = await api<Verification>(`/api/contracts/${c.id}/verify`, token, { method: "POST", body: new FormData() });
+            const v = await api<Verification>(`/api/contracts/${c.id}/verify`, token, { method: "POST" });
             setResult(v);
-            setLogs(await api<Log[]>(`/api/contracts/${c.id}/verifications`, token));
-            toast.success("Đã phân tích hợp đồng");
+            if (v.result === "matched") toast.success("File khớp với mã SHA-256 đã lưu");
+            else if (v.result === "mismatched") toast.warning("File khác với bản đã lưu hoặc đã bị thay đổi");
+            else toast.error("Không thể xác thực file");
+            if (user.role === "admin") {
+                try {
+                    setLogs(await api<Log[]>(`/api/contracts/${c.id}/verifications`, token));
+                } catch {
+                    toast.warning("Không tải được lịch sử xác minh");
+                }
+            }
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Không thể phân tích");
         } finally {
@@ -190,12 +204,19 @@ export default function Home() {
     }
 
     function pick(f?: File) {
-        if (!f) return;
-        if (!["application/pdf", "image/png", "image/jpeg"].includes(f.type)) {
-            toast.error("Chỉ hỗ trợ PDF, PNG hoặc JPG");
+        if (!f || busy) return;
+        if (!/\.(pdf|doc|docx|txt)$/i.test(f.name)) {
+            toast.error("Chỉ hỗ trợ PDF, DOC, DOCX hoặc TXT");
+            return;
+        }
+        if (f.size === 0 || f.size > 20 * 1024 * 1024) {
+            toast.error("File phải có dữ liệu và không vượt quá 20 MiB");
             return;
         }
         setFile(f);
+        setContract(null);
+        setResult(null);
+        setLogs([]);
     }
 
     function logout() {
@@ -203,6 +224,9 @@ export default function Home() {
         setToken("");
         setUser(null);
         setResult(null);
+        setContract(null);
+        setLogs([]);
+        setFile(null);
         toast.success("Đã đăng xuất");
     }
 
@@ -228,7 +252,7 @@ export default function Home() {
                         <>
                             <span className="user-chip">
                                 <UserRound size={15} />
-                                {user.full_name}
+                                {user.full_name || user.email}
                             </span>
                             <button className="icon-button" onClick={logout} aria-label="Đăng xuất">
                                 <LogOut size={18} />
@@ -358,7 +382,7 @@ export default function Home() {
                             pick(e.dataTransfer.files[0]);
                         }}
                     >
-                        <input id="contract-file" type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => pick(e.target.files?.[0])} />
+                        <input id="contract-file" type="file" accept=".pdf,.doc,.docx,.txt" disabled={busy} onChange={(e) => pick(e.target.files?.[0])} />
                         <label htmlFor="contract-file">
                             <span className="upload-orb">
                                 <UploadCloud />
@@ -371,7 +395,7 @@ export default function Home() {
                             ) : (
                                 <>
                                     <b>Kéo thả hợp đồng vào đây</b>
-                                    <small>PDF, PNG, JPG · tối đa 20 MB</small>
+                                    <small>PDF, DOC, DOCX, TXT · tối đa 20 MiB</small>
                                 </>
                             )}
                             <span className="browse-button">{file ? "Chọn tệp khác" : "Chọn tệp"}</span>
@@ -397,19 +421,19 @@ export default function Home() {
                         <div>
                             <span>KẾT QUẢ PHÂN TÍCH</span>
                             <h2>{contract?.original_filename}</h2>
-                            <p>{result.ai_overview || "Đã hoàn tất kiểm tra tính toàn vẹn và rủi ro."}</p>
+                            <p>{result.risk_label === "processing" ? "Đã nhận kết quả xác minh file. Chưa có kết quả phân tích rủi ro AI để hiển thị." : result.ai_overview || "Chưa có kết quả phân tích rủi ro AI."}</p>
                         </div>
                         <div className={`risk-badge ${tone}`}>
-                            <strong>{result.risk_score}</strong>
-                            <span>/100</span>
-                            <small>{result.risk_label || "Mức rủi ro"}</small>
+                            <strong>{result.risk_label === "processing" ? "—" : result.risk_score}</strong>
+                            {result.risk_label !== "processing" && <span>/100</span>}
+                            <small>{result.risk_label === "processing" ? "Chưa có kết quả AI" : result.risk_label || "Mức rủi ro"}</small>
                         </div>
                     </div>
                     <div className="result-grid">
                         <SpotlightCard className="integrity-card">
                             <small>TÍNH TOÀN VẸN</small>
                             <ShieldCheck />
-                            <h3>{result.result}</h3>
+                            <h3>{{ matched: "File khớp hash chuẩn", mismatched: "File khác hoặc đã bị thay đổi", failed: "Không thể xác thực file" }[result.result]}</h3>
                             <p>Đối chiếu dấu vân tay số SHA-256.</p>
                             <code>{result.actual_sha256?.slice(0, 24)}…</code>
                         </SpotlightCard>
@@ -417,7 +441,7 @@ export default function Home() {
                             <div className="card-title">
                                 <div>
                                     <small>AI FINDINGS</small>
-                                    <h3>{result.ai_findings?.length || 0} điểm cần xem xét</h3>
+                                    <h3>{result.risk_label === "processing" ? "Chưa có kết quả AI" : `${result.ai_findings?.length || 0} điểm cần xem xét`}</h3>
                                 </div>
                                 <Sparkles />
                             </div>
@@ -430,7 +454,7 @@ export default function Home() {
                                 ))
                             ) : (
                                 <div className="empty-finding">
-                                    <Check /> Không có phát hiện chi tiết.
+                                    {result.risk_label === "processing" ? "Chưa thể kết luận về rủi ro của hợp đồng." : "Không có phát hiện chi tiết."}
                                 </div>
                             )}
                         </div>
@@ -462,7 +486,7 @@ export default function Home() {
                 </div>
                 <div className="steps">
                     {[
-                        ["01", UploadCloud, "Tải tài liệu", "PDF hoặc ảnh chụp rõ nét."],
+                        ["01", UploadCloud, "Tải tài liệu", "PDF, DOC, DOCX hoặc TXT."],
                         ["02", Fingerprint, "Xác minh", "Kiểm tra toàn vẹn SHA-256."],
                         ["03", Sparkles, "Hiểu rủi ro", "AI chỉ ra điểm cần lưu ý."],
                     ].map(([n, I, t, d]) => (

@@ -7,8 +7,7 @@ Contract Verifier is a full-stack app for:
 - importing legal reference data and risk rules from Excel
 
 This repo is designed to run with:
-- PostgreSQL running in Docker on the host machine
-- backend and frontend running in Docker containers
+- PostgreSQL, backend and frontend running together in Docker Compose
 - optional data import from the `data/` folder
 
 ## Project Layout
@@ -17,39 +16,36 @@ This repo is designed to run with:
 backend/                  FastAPI backend
 frontend/                 React/Vinext frontend
 data/                     Excel references and sample contracts
-docker-compose.yml        Backend + frontend stack
+docker-compose.yml        PostgreSQL + backend + frontend stack
 .env.example              Environment template
 ```
 
 ## What Runs Automatically
 
 - The backend creates the database schema on startup.
+- Backend startup waits for the PostgreSQL healthcheck to pass.
+- Schema creation uses SQLAlchemy `create_all` plus missing indexes. There is no
+  versioned migration runner; existing table definitions are not upgraded automatically.
 - No users, contracts, or verification logs are seeded automatically.
 - Sample/reference data is imported only when you run the import job manually.
 
 ## Prerequisites
 
 - Docker Desktop
-- PostgreSQL container running on the host machine and exposed on port `5432`
-- DBeaver or another DB client if you want to inspect the database
 
 ## Database Setup
 
-Use PostgreSQL credentials that match your running container:
+Compose creates the `postgres` service and the database named by `POSTGRES_DB`.
+Backend and the optional importer connect to `postgres:5432` on the Compose
+network using `DATABASE_URL`. No separately installed PostgreSQL is needed.
 
-```text
-Host: localhost
-Port: 5432
-User: admin
-Password: matkhau_xinfu
-Database: contract_verifier_db
-```
+Database files persist in the named volume `postgres-data`. PostgreSQL initializes
+the user/password/database only when that volume is empty; changing `.env` later
+does not change credentials in an existing database. `docker compose down` retains
+the volume; `docker compose down -v` deletes its data.
 
-The backend container must connect to the host machine through:
-
-```text
-postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
-```
+Port 5432 is not published to the host. For optional DBeaver access, explicitly add
+`127.0.0.1:5432:5432` to the postgres service's `ports`, then connect to localhost.
 
 ## Quick Start with cmd
 
@@ -57,23 +53,30 @@ postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
 ```bash
 copy .env.example .env
 ```
-2. Keep or edit these values:
+2. Set a development-only password in the ignored `.env`. Keep the password in
+`POSTGRES_PASSWORD` and `DATABASE_URL` consistent. URL-encode special characters
+in the URL password. Never commit `.env`.
 
 ```env
-DATABASE_URL=postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=replace_with_local_password
+POSTGRES_DB=contract_verifier_db
+DATABASE_URL=postgresql://admin:replace_with_local_password@postgres:5432/contract_verifier_db
 CORS_ORIGINS=*
 BACKEND_INTERNAL_URL=http://backend:8000
 ```
 
-3. Start the web app:
+3. Validate without printing credentials, then start the three services:
 
 ```bash
-docker compose up --build
+docker compose config --quiet
+docker compose up -d --build postgres backend frontend
 ```
 
 4. Open the app:
 - Frontend: `http://localhost:3000`
 - Backend health check: `http://localhost:8000/health`
+- Backend health check through frontend proxy: `http://localhost:3000/health`
 
 If you are on another laptop in the same network, replace `localhost` with the host machine IP, for example:
 
@@ -93,11 +96,13 @@ The import job is idempotent for the dedicated import account. It removes previo
 ## Docker Services
 
 The Compose stack includes:
+- `postgres`: PostgreSQL 17 with healthcheck and persistent storage
 - `backend`: FastAPI API
 - `frontend`: web UI
 - `import-data`: manual seed/import job
 
-The backend and importer both use `DATABASE_URL` from the environment, so they can connect to the PostgreSQL container already running on your host.
+The backend and importer both use `DATABASE_URL` from the environment and wait for
+the `postgres` service to become healthy. Normal startup does not run the `seed` profile.
 
 ## Frontend Behavior
 
@@ -114,6 +119,10 @@ If you run through Docker Compose, you can leave `NEXT_PUBLIC_API_BASE_URL` empt
 ## Local Dev Without Docker
 
 If you want to run only the backend locally:
+
+Provide a reachable PostgreSQL instance and set `DATABASE_URL` in the shell.
+The Compose hostname `postgres` is only resolvable inside its Docker network.
+Backend does not automatically load the root `.env` when run directly.
 
 ```bash
 python -m venv .venv
@@ -158,8 +167,7 @@ These files are reference/import data. They are not loaded automatically at star
 
 ## Notes
 
-- Use `host.docker.internal` for backend container access to the host PostgreSQL container.
-- DBeaver should still connect to `localhost:5432` because the database is published on the host.
+- Use `postgres:5432` for database access from backend/importer containers.
 - Keep `SECRET_KEY`, `DATABASE_URL`, and `CORS_ORIGINS` in `.env` for real deployments.
 - Set `CORS_ORIGINS=*` if you want the API reachable from any browser origin on your LAN.
 - The repo intentionally starts from an empty schema, not a preseeded database.

@@ -1,17 +1,33 @@
 services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-contract_verifier_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     container_name: contract-verifier-backend
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       SECRET_KEY: change-me-in-production
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       STORAGE_ROOT: /data/storage
       SECURE_STORAGE_ROOT: /data/secure_storage
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     volumes:
@@ -37,12 +53,14 @@ services:
     container_name: contract-verifier-import-data
     command: ["python", "-m", "backend.import_excel"]
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
     profiles:
       - seed
 
 volumes:
+  postgres-data:
   backend-storage:
   backend-secure-storage:
