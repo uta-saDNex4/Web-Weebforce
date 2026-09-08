@@ -1,12 +1,14 @@
 # Web-Weebforce - Contract Verifier
 
 Contract Verifier is a full-stack app for:
+
 - uploading contract files
 - verifying SHA-256 integrity
 - managing contract clauses
 - importing legal reference data and risk rules from Excel
 
 This repo is designed to run with:
+
 - PostgreSQL running in Docker on the host machine
 - backend and frontend running in Docker containers
 - optional data import from the `data/` folder
@@ -54,9 +56,11 @@ postgresql://admin:matkhau_xinfu@host.docker.internal:5432/contract_verifier_db
 ## Quick Start with cmd
 
 1. Copy `.env.example` to `.env`
+
 ```bash
 copy .env.example .env
 ```
+
 2. Keep or edit these values:
 
 ```env
@@ -72,6 +76,7 @@ docker compose up --build
 ```
 
 4. Open the app:
+
 - Frontend: `http://localhost:3000`
 - Backend health check: `http://localhost:8000/health`
 
@@ -93,6 +98,7 @@ The import job is idempotent for the dedicated import account. It removes previo
 ## Docker Services
 
 The Compose stack includes:
+
 - `backend`: FastAPI API
 - `frontend`: web UI
 - `import-data`: manual seed/import job
@@ -132,23 +138,24 @@ npm run dev
 
 ## API Endpoints
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/health` | Health check |
-| POST | `/api/users/register` | Register |
-| POST | `/api/users/login` | Login |
-| GET | `/api/auth/me` | Current user |
-| POST | `/api/contracts` | Upload contract |
-| GET | `/api/contracts/{id}` | Get contract metadata |
-| POST | `/api/contracts/{id}/verify` | Verify SHA-256 |
-| POST | `/api/contracts/{id}/clauses` | Add clause |
-| PUT | `/api/contracts/{id}/clauses/{clause_id}` | Update clause |
-| DELETE | `/api/contracts/{id}/clauses/{clause_id}` | Delete clause |
-| GET | `/api/contracts/{id}/verifications` | Verification history |
+| Method | Endpoint                                  | Purpose               |
+| ------ | ----------------------------------------- | --------------------- |
+| GET    | `/health`                                 | Health check          |
+| POST   | `/api/users/register`                     | Register              |
+| POST   | `/api/users/login`                        | Login                 |
+| GET    | `/api/auth/me`                            | Current user          |
+| POST   | `/api/contracts`                          | Upload contract       |
+| GET    | `/api/contracts/{id}`                     | Get contract metadata |
+| POST   | `/api/contracts/{id}/verify`              | Verify SHA-256        |
+| POST   | `/api/contracts/{id}/clauses`             | Add clause            |
+| PUT    | `/api/contracts/{id}/clauses/{clause_id}` | Update clause         |
+| DELETE | `/api/contracts/{id}/clauses/{clause_id}` | Delete clause         |
+| GET    | `/api/contracts/{id}/verifications`       | Verification history  |
 
 ## Data Files
 
 The `data/` folder contains:
+
 - `legal_references.xlsx`
 - `risk_rules_master.xlsx`
 - `test_set_labeled.xlsx`

@@ -163,33 +163,30 @@ export default function Home() {
         <div className="px-6 py-2.5 bg-[#173d5a]/60 border-b border-[#26435e] flex gap-2 text-xs font-medium">
           <button
             onClick={() => setActiveTab("structure")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === "structure"
-                ? "bg-[#0b5fff] text-white font-semibold"
-                : "text-[#8297ac] hover:text-white"
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === "structure"
+              ? "bg-[#0b5fff] text-white font-semibold"
+              : "text-[#8297ac] hover:text-white"
+              }`}
           >
             <FolderTree className="w-3.5 h-3.5" />
             <span>Cấu trúc thư mục</span>
           </button>
           <button
             onClick={() => setActiveTab("page")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === "page"
-                ? "bg-[#0b5fff] text-white font-semibold"
-                : "text-[#8297ac] hover:text-white"
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === "page"
+              ? "bg-[#0b5fff] text-white font-semibold"
+              : "text-[#8297ac] hover:text-white"
+              }`}
           >
             <Code2 className="w-3.5 h-3.5" />
             <span>app/page.tsx</span>
           </button>
           <button
             onClick={() => setActiveTab("guide")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === "guide"
-                ? "bg-[#0b5fff] text-white font-semibold"
-                : "text-[#8297ac] hover:text-white"
-            }`}
+            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === "guide"
+              ? "bg-[#0b5fff] text-white font-semibold"
+              : "text-[#8297ac] hover:text-white"
+              }`}
           >
             <Terminal className="w-3.5 h-3.5" />
             <span>Hướng dẫn cài đặt</span>
