@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
-import { Bot, MessageSquare, Mic, Camera, Send, Sparkles, User, HelpCircle, Check, ArrowRight, CornerDownLeft } from 'lucide-react';
-import { SAMPLE_AI_QUESTIONS } from '../data/legalReferences';
-import { motion } from 'motion/react';
+import React, { useState } from "react";
+import {
+  Bot,
+  MessageSquare,
+  Mic,
+  Camera,
+  Send,
+  Sparkles,
+  User,
+  HelpCircle,
+  Check,
+  ArrowRight,
+  CornerDownLeft,
+} from "lucide-react";
+import { SAMPLE_AI_QUESTIONS } from "../data/legalReferences";
+import { motion } from "motion/react";
 
 export const AiAssistantSection: React.FC = () => {
   const [messages, setMessages] = useState([
     {
-      id: '1',
-      sender: 'user',
-      text: 'Điều khoản “chi phí đào tạo” này có nghĩa là gì?'
+      id: "1",
+      sender: "user",
+      text: "Điều khoản “chi phí đào tạo” này có nghĩa là gì?",
     },
     {
-      id: '2',
-      sender: 'ai',
-      tag: 'GỢI Ý CỦA AI',
-      text: 'Đây thường là khoản hoàn trả nếu bạn nghỉ sớm. Hãy hỏi rõ: chi phí nào được tính, thời hạn cam kết và cách tính hoàn trả.',
-      citation: 'Điều 62 Bộ luật Lao động 2019'
-    }
+      id: "2",
+      sender: "ai",
+      tag: "GỢI Ý CỦA AI",
+      text: "Đây thường là khoản hoàn trả nếu bạn nghỉ sớm. Hãy hỏi rõ: chi phí nào được tính, thời hạn cam kết và cách tính hoàn trả.",
+      citation: "Điều 62 Bộ luật Lao động 2019",
+    },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
   const handleSend = (textToSend?: string) => {
@@ -27,33 +39,35 @@ export const AiAssistantSection: React.FC = () => {
 
     const userMsg = {
       id: Date.now().toString(),
-      sender: 'user',
-      text: q
+      sender: "user",
+      text: q,
     };
 
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue('');
+    setMessages((prev) => [...prev, userMsg]);
+    setInputValue("");
     setIsTyping(true);
 
     setTimeout(() => {
       // Find matching sample answer or generate standard student response
       const matched = SAMPLE_AI_QUESTIONS.find(
-        sq => sq.question.toLowerCase().includes(q.toLowerCase().slice(0, 10)) ||
-              q.toLowerCase().includes('cọc') && sq.question.includes('cọc') ||
-              q.toLowerCase().includes('thử việc') && sq.question.includes('lương')
+        (sq) =>
+          sq.question.toLowerCase().includes(q.toLowerCase().slice(0, 10)) ||
+          (q.toLowerCase().includes("cọc") && sq.question.includes("cọc")) ||
+          (q.toLowerCase().includes("thử việc") &&
+            sq.question.includes("lương")),
       );
 
       const aiMsg = {
         id: (Date.now() + 1).toString(),
-        sender: 'ai',
-        tag: 'GỢI Ý CỦA AI',
-        text: matched 
-          ? matched.answer 
+        sender: "ai",
+        tag: "GỢI Ý CỦA AI",
+        text: matched
+          ? matched.answer
           : `Đối với điều khoản này: Bạn nên yêu cầu bên đối tác làm rõ văn bản về nghĩa vụ, các mốc thời gian hoàn thành và chế tài phạt nếu có phát sinh tranh chấp. Tránh các thỏa thuận miệng hoặc từ ngữ chung chung như "tùy quyết định công ty".`,
-        citation: matched?.citation || 'Bộ luật Dân sự & Lao động 2019'
+        citation: matched?.citation || "Bộ luật Dân sự & Lao động 2019",
       };
 
-      setMessages(prev => [...prev, aiMsg]);
+      setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
     }, 600);
   };
@@ -61,9 +75,7 @@ export const AiAssistantSection: React.FC = () => {
   return (
     <section id="ai-section" className="py-16 sm:py-24 overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          
           {/* Left Column: Descriptions and features */}
           <div className="lg:col-span-6 space-y-6">
             <div>
@@ -75,7 +87,9 @@ export const AiAssistantSection: React.FC = () => {
                 Hỏi theo cách của bạn.
               </h2>
               <p className="text-base text-[#49627d] leading-relaxed">
-                Chat, nói hoặc gửi ảnh chụp. Contractly sẽ giúp bạn biến phần ngôn ngữ pháp lý phức tạp thành những câu hỏi cụ thể để trao đổi với bên còn lại.
+                Chat, nói hoặc gửi ảnh chụp. WeebLegit sẽ giúp bạn biến phần
+                ngôn ngữ pháp lý phức tạp thành những câu hỏi cụ thể để trao đổi
+                với bên còn lại.
               </p>
             </div>
 
@@ -113,7 +127,6 @@ export const AiAssistantSection: React.FC = () => {
           {/* Right Column: Interactive AI Chat Box (exact Framer design) */}
           <div className="lg:col-span-6">
             <div className="bg-white rounded-2xl border border-[#d8e3ef] shadow-xl shadow-[#113d64]/6 overflow-hidden flex flex-col h-[480px]">
-              
               {/* Chat Header */}
               <div className="px-5 py-4 border-b border-[#e6edf4] bg-[#f8fafd] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -121,7 +134,9 @@ export const AiAssistantSection: React.FC = () => {
                     <Bot className="w-4.5 h-4.5" />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#10253f]">Contractly AI</span>
+                    <span className="font-bold text-sm text-[#10253f]">
+                      WeebLegit AI
+                    </span>
                   </div>
                 </div>
 
@@ -135,7 +150,7 @@ export const AiAssistantSection: React.FC = () => {
               <div className="flex-1 p-5 overflow-y-auto space-y-4">
                 {messages.map((m) => (
                   <div key={m.id} className="space-y-2">
-                    {m.sender === 'user' ? (
+                    {m.sender === "user" ? (
                       <div className="flex justify-end">
                         <div className="bg-[#e6f0ff] text-[#10253f] text-sm font-medium px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-[85%] border border-[#b9cadd]/60">
                           {m.text}
@@ -154,7 +169,9 @@ export const AiAssistantSection: React.FC = () => {
                           {m.citation && (
                             <div className="mt-2.5 pt-2 border-t border-[#d8e3ef]/60 text-xs font-medium text-[#49627d] flex items-center gap-1">
                               <span>Tham chiếu:</span>
-                              <span className="font-semibold text-[#0b5fff]">{m.citation}</span>
+                              <span className="font-semibold text-[#0b5fff]">
+                                {m.citation}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -168,7 +185,9 @@ export const AiAssistantSection: React.FC = () => {
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0b5fff] animate-bounce" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0b5fff] animate-bounce [animation-delay:0.2s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0b5fff] animate-bounce [animation-delay:0.4s]" />
-                    <span className="ml-1">AI đang đối chiếu điều khoản...</span>
+                    <span className="ml-1">
+                      AI đang đối chiếu điều khoản...
+                    </span>
                   </div>
                 )}
               </div>
@@ -176,13 +195,17 @@ export const AiAssistantSection: React.FC = () => {
               {/* Preset quick questions */}
               <div className="px-4 py-2 bg-[#f8fafd] border-t border-[#e6edf4] flex gap-2 overflow-x-auto text-xs no-scrollbar">
                 <button
-                  onClick={() => handleSend('Tiền cọc phòng trọ có được lấy lại không?')}
+                  onClick={() =>
+                    handleSend("Tiền cọc phòng trọ có được lấy lại không?")
+                  }
                   className="whitespace-nowrap bg-white border border-[#d8e3ef] hover:border-[#0b5fff] text-[#49627d] hover:text-[#0b5fff] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                 >
                   💡 Tiền cọc phòng trọ?
                 </button>
                 <button
-                  onClick={() => handleSend('Lương thử việc 70% có đúng luật không?')}
+                  onClick={() =>
+                    handleSend("Lương thử việc 70% có đúng luật không?")
+                  }
                   className="whitespace-nowrap bg-white border border-[#d8e3ef] hover:border-[#0b5fff] text-[#49627d] hover:text-[#0b5fff] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                 >
                   ⚖️ Lương thử việc 70%?
@@ -190,7 +213,7 @@ export const AiAssistantSection: React.FC = () => {
               </div>
 
               {/* Chat Input */}
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSend();
@@ -204,11 +227,15 @@ export const AiAssistantSection: React.FC = () => {
                   placeholder="Hỏi về một điều khoản…"
                   className="flex-1 text-sm bg-[#f2f7fc] border border-[#d8e3ef] rounded-xl px-3.5 py-2.5 text-[#10253f] placeholder-[#8297ac] focus:outline-none focus:border-[#0b5fff] focus:bg-white transition-all"
                 />
-                
+
                 <button
                   type="button"
                   title="Ghi âm câu hỏi"
-                  onClick={() => handleSend('Tóm tắt những bẫy pháp lý trong hợp đồng này giúp em.')}
+                  onClick={() =>
+                    handleSend(
+                      "Tóm tắt những bẫy pháp lý trong hợp đồng này giúp em.",
+                    )
+                  }
                   className="p-2.5 text-[#49627d] hover:text-[#0b5fff] hover:bg-[#f2f7fc] rounded-xl transition-colors cursor-pointer"
                 >
                   <Mic className="w-4.5 h-4.5" />
@@ -222,12 +249,9 @@ export const AiAssistantSection: React.FC = () => {
                   <Send className="w-4.5 h-4.5" />
                 </button>
               </form>
-
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
   );

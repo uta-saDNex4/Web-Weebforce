@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Menu, X, ArrowRight, Code2, LogOut, User, ChevronDown } from 'lucide-react';
-import { useAuth } from '../lib/auth-context';
+import React, { useState } from "react";
+import {
+  ShieldCheck,
+  Menu,
+  X,
+  ArrowRight,
+  Code2,
+  LogOut,
+  User,
+  ChevronDown,
+} from "lucide-react";
+import { useAuth } from "../lib/auth-context";
 
 interface NavbarProps {
   onOpenChecker: () => void;
@@ -23,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      el.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -35,37 +44,38 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#f7fafc]/90 border-b border-[#d8e3ef]/70 transition-all">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-
         {/* Brand Logo */}
         <a href="#" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-lg bg-[#0b5fff] flex items-center justify-center text-white shadow-sm shadow-[#0b5fff]/30 transition-transform group-hover:scale-105">
             <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="font-bold text-lg tracking-tight text-[#10253f]">Contractly</span>
+          <span className="font-bold text-lg tracking-tight text-[#10253f]">
+            WeebLegit
+          </span>
         </a>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-[14.5px] font-medium text-[#49627d]">
           <button
-            onClick={() => scrollToSection('templates-section')}
+            onClick={() => scrollToSection("templates-section")}
             className="hover:text-[#10253f] transition-colors cursor-pointer"
           >
             Mẫu hợp đồng
           </button>
           <button
-            onClick={() => scrollToSection('ai-section')}
+            onClick={() => scrollToSection("ai-section")}
             className="hover:text-[#10253f] transition-colors cursor-pointer"
           >
             Hỏi AI
           </button>
           <button
-            onClick={() => scrollToSection('process-section')}
+            onClick={() => scrollToSection("process-section")}
             className="hover:text-[#10253f] transition-colors cursor-pointer"
           >
             Quy trình
           </button>
           <button
-            onClick={() => scrollToSection('sources-section')}
+            onClick={() => scrollToSection("sources-section")}
             className="hover:text-[#10253f] transition-colors cursor-pointer"
           >
             Nguồn luật
@@ -84,15 +94,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0b5fff] to-[#004ee6] flex items-center justify-center text-white text-xs font-bold uppercase">
                   {(user.full_name ?? user.email).charAt(0)}
                 </div>
-                <span className="max-w-[120px] truncate">{user.full_name ?? user.email}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#8297ac] transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <span className="max-w-[120px] truncate">
+                  {user.full_name ?? user.email}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#8297ac] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-[#d8e3ef] rounded-xl shadow-lg py-1 z-50">
                   <div className="px-3 py-2 border-b border-[#e6edf4]">
-                    <p className="text-xs font-semibold text-[#10253f] truncate">{user.full_name ?? 'Người dùng'}</p>
-                    <p className="text-xs text-[#8297ac] truncate">{user.email}</p>
+                    <p className="text-xs font-semibold text-[#10253f] truncate">
+                      {user.full_name ?? "Người dùng"}
+                    </p>
+                    <p className="text-xs text-[#8297ac] truncate">
+                      {user.email}
+                    </p>
                   </div>
                   <button
                     onClick={onOpenChecker}
@@ -143,7 +161,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-2 text-[#49627d] hover:text-[#10253f] rounded-lg hover:bg-slate-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -152,25 +174,25 @@ export const Navbar: React.FC<NavbarProps> = ({
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-[#d8e3ef] bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg">
           <button
-            onClick={() => scrollToSection('templates-section')}
+            onClick={() => scrollToSection("templates-section")}
             className="block w-full text-left px-3 py-2 text-[15px] font-medium text-[#10253f] hover:bg-slate-50 rounded-lg"
           >
             Mẫu hợp đồng
           </button>
           <button
-            onClick={() => scrollToSection('ai-section')}
+            onClick={() => scrollToSection("ai-section")}
             className="block w-full text-left px-3 py-2 text-[15px] font-medium text-[#10253f] hover:bg-slate-50 rounded-lg"
           >
             Hỏi AI
           </button>
           <button
-            onClick={() => scrollToSection('process-section')}
+            onClick={() => scrollToSection("process-section")}
             className="block w-full text-left px-3 py-2 text-[15px] font-medium text-[#10253f] hover:bg-slate-50 rounded-lg"
           >
             Quy trình
           </button>
           <button
-            onClick={() => scrollToSection('sources-section')}
+            onClick={() => scrollToSection("sources-section")}
             className="block w-full text-left px-3 py-2 text-[15px] font-medium text-[#10253f] hover:bg-slate-50 rounded-lg"
           >
             Nguồn luật
@@ -179,16 +201,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             {user ? (
               <>
                 <div className="px-3 py-2 text-sm text-[#49627d]">
-                  Xin chào, <strong className="text-[#10253f]">{user.full_name ?? user.email}</strong>
+                  Xin chào,{" "}
+                  <strong className="text-[#10253f]">
+                    {user.full_name ?? user.email}
+                  </strong>
                 </div>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); onOpenChecker(); }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenChecker();
+                  }}
                   className="w-full py-2.5 text-center text-sm font-semibold text-white bg-[#0b5fff] rounded-xl"
                 >
                   Kiểm tra hợp đồng
                 </button>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
                   className="w-full py-2.5 text-center text-sm font-semibold text-[#e4534b] border border-[#ffd1cc] rounded-xl"
                 >
                   Đăng xuất
@@ -197,13 +228,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); onOpenAuth(); }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAuth();
+                  }}
                   className="w-full text-center py-2 text-sm font-medium text-[#49627d] hover:text-[#10253f]"
                 >
                   Đăng nhập
                 </button>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); onOpenChecker(); }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenChecker();
+                  }}
                   className="w-full py-2.5 text-center text-sm font-semibold text-white bg-[#0b5fff] rounded-xl"
                 >
                   Dùng thử miễn phí
